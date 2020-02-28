@@ -16,10 +16,10 @@ node {
    }
    stage('Build App Docker Image') {
       withEnv(["DOCKER_HOST=${DOCKERHOST}"]) {
-        sh 'docker build --no-cache -t devops-wiki:1.0.$BUILD_NUMBER .'
-        sh 'docker tag devops-wiki:1.0.$BUILD_NUMBER ${REGISTRY}/devops-wiki:1.0.$BUILD_NUMBER'
+        sh 'docker build --no-cache -t data-connector:1.0.$BUILD_NUMBER .'
+        sh 'docker tag data-connector:1.0.$BUILD_NUMBER ${REGISTRY}/data-connector:1.0.$BUILD_NUMBER'
         sh 'echo "${DOCKERPASSWORD}" | docker login -u ${DOCKERUSER} --password-stdin https://${REGISTRY}'
-        sh 'docker push ${REGISTRY}/devops-wiki:1.0.$BUILD_NUMBER'
+        sh 'docker push ${REGISTRY}/data-connector:1.0.$BUILD_NUMBER'
       }
    }
    stage('Setup Deployment Package') {
@@ -33,8 +33,8 @@ node {
    }
    stage('Docker Cleanup') {
       withEnv(["DOCKER_HOST=${DOCKERHOST}"]) {
-        sh 'docker rmi -f devops-wiki:1.0.$BUILD_NUMBER'
-        sh 'docker rmi -f ${REGISTRY}/devops-wiki:1.0.$BUILD_NUMBER'
+        sh 'docker rmi -f data-connector:1.0.$BUILD_NUMBER'
+        sh 'docker rmi -f ${REGISTRY}/data-connector:1.0.$BUILD_NUMBER'
         sh 'docker rmi -f sonar-scanner:latest'
       }
    }

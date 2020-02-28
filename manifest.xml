@@ -1,18 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<udm.DeploymentPackage version="{{ VERSION }}" application="DevOpsWiki">
+<udm.DeploymentPackage version="{{ VERSION }}" application="BillingService">
   <deployables>
-    <docker.ContainerSpec name="/wiki">
-      <containerName>devops-wiki</containerName>
-      <image>{{ REGISTRY }}/devops-wiki:{{ VERSION }}</image>
+    <aws.lambda.FunctionZip name="/lambda-functions" file="lambda.zip">
+      <scanPlaceholders>true</scanPlaceholders>
+      <preScannedPlaceholders>true</preScannedPlaceholders>
+      <functionName>core</functionName>
+      <region>us-east-1</region>
+      <runtime>python3.6</runtime>
+      <role>arn:aws:iam::390157638997:role/ndebuhr-lambda</role>
+      <handler>lambda_handler</handler>
+    </aws.lambda.FunctionZip>
+    <docker.ContainerSpec name="/data-connector">
+      <containerName>data-connector</containerName>
+      <image>{{ REGISTRY }}/data-connector:{{ VERSION }}</image>
       <showLogsAfter>30</showLogsAfter>
       <portBindings>
-        <docker.PortSpec name="/wiki/http">
+        <docker.PortSpec name="/data-connector/http">
           <hostPort>8008</hostPort>
           <containerPort>8008</containerPort>
           <protocol>tcp</protocol>
         </docker.PortSpec>
       </portBindings>
     </docker.ContainerSpec>
+    <k8s.ServiceSpec name="/rest-o-rant-api-d-service">
+      <tags />
+      <serviceName>rest-o-rant-api-d-service</serviceName>
+      <serviceType>NodePort</serviceType>
+      <externalIPs />
+      <loadBalancerSourceRanges />
+      <selectors>
+        <entry key="name">rest-o-rant-api-d</entry>
+      </selectors>
+      <ports>
+        <k8s.ServicePortSpec name="/rest-o-rant-api-d-service/port">
+          <port>8080</port>
+          <targetPort>8080</targetPort>
+        </k8s.ServicePortSpec>
+      </ports>
+    </k8s.ServiceSpec>
+    <k8s.DeploymentSpec name="/rest-o-rant-api-d">
+      <tags />
+      <containers>
+        <k8s.ContainerSpec name="/rest-o-rant-api-d/rest-o-rant-api-d">
+          <containerName>rest-o-rant-api-d</containerName>
+          <image>xebialabsunsupported/rest-o-rant-api:v1</image>
+          <command />
+          <args />
+          <ports>
+            <k8s.ContainerPortSpec name="/rest-o-rant-api-d/rest-o-rant-api-d/port">
+              <hostPort>8080</hostPort>
+              <containerPort>8080</containerPort>
+            </k8s.ContainerPortSpec>
+          </ports>
+          <probes />
+          <volumeBindings />
+          <envVars />
+        </k8s.ContainerSpec>
+      </containers>
+      <volumes />
+      <labels>
+        <entry key="name">rest-o-rant-api-d</entry>
+      </labels>
+      <imagePullSecrets />
+      <deploymentName>rest-o-rant-api-d</deploymentName>
+      <replicasCount>2</replicasCount>
+      <matchLabels>
+        <entry key="name">rest-o-rant-api-d</entry>
+      </matchLabels>
+      <matchExpressions />
+    </k8s.DeploymentSpec>
   </deployables>
   <dependencyResolution>LATEST</dependencyResolution>
   <undeployDependencies>false</undeployDependencies>
